@@ -16,7 +16,7 @@ class SeaBattle {
 
   void displayGrid(List<List<String>> grid, {bool showShips = false, List<List<bool>>? ships}) {
     clearScreen();
-    print('\n   A B C D E F G H I J');
+    print('\n     A B C D E F G H I J');
     print('   ┌─────────────────────┐');
     for (int i = 0; i < gridSize; i++) {
       stdout.write('${(i + 1).toString().padLeft(2)} │');
