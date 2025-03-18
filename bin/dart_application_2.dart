@@ -3,9 +3,25 @@ import 'dart:math';
 
 const int gridSize = 10;
 const List<int> shipSizes = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
-const List<String> columnLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+const List<String> columnLabels = [
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+];
 
 class SeaBattle {
+  int playerHits = 0;
+  int playerMisses = 0;
+  int computerHits = 0;
+  int computerMisses = 0;
+
   void clearScreen() {
     if (Platform.isWindows) {
       Process.runSync("cls", [], runInShell: true);
@@ -14,7 +30,11 @@ class SeaBattle {
     }
   }
 
-  void displayGrid(List<List<String>> grid, {bool showShips = false, List<List<bool>>? ships}) {
+  void displayGrid(
+    List<List<String>> grid, {
+    bool showShips = false,
+    List<List<bool>>? ships,
+  }) {
     clearScreen();
     print('\n     A B C D E F G H I J');
     print('   ┌─────────────────────┐');
@@ -55,15 +75,25 @@ class SeaBattle {
     }
   }
 
-  bool canPlaceShip(List<List<bool>> grid, int x, int y, int size, bool horizontal) {
+  bool canPlaceShip(
+    List<List<bool>> grid,
+    int x,
+    int y,
+    int size,
+    bool horizontal,
+  ) {
     if (horizontal && (y + size > gridSize)) return false;
     if (!horizontal && (x + size > gridSize)) return false;
-    
+
     for (int i = -1; i <= size; i++) {
       for (int j = -1; j <= 1; j++) {
         int nx = horizontal ? x + j : x + i;
         int ny = horizontal ? y + i : y + j;
-        if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {
+        if (nx >= 0 &&
+            nx < gridSize &&
+            ny >= 0 &&
+            ny < gridSize &&
+            grid[nx][ny]) {
           return false;
         }
       }
@@ -82,7 +112,10 @@ class SeaBattle {
           continue;
         }
         int y = columnLabels.indexOf(input[0]);
-        int x = int.tryParse(input.substring(1)) != null ? int.parse(input.substring(1)) - 1 : -1;
+        int x =
+            int.tryParse(input.substring(1)) != null
+                ? int.parse(input.substring(1)) - 1
+                : -1;
 
         if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) {
           print('Неверные координаты, попробуйте снова.');
@@ -102,7 +135,11 @@ class SeaBattle {
             }
           }
           placed = true;
-          displayGrid(List.generate(gridSize, (_) => List.filled(gridSize, '·')), showShips: true, ships: shipGrid);
+          displayGrid(
+            List.generate(gridSize, (_) => List.filled(gridSize, '·')),
+            showShips: true,
+            ships: shipGrid,
+          );
         } else {
           print('Невозможно разместить корабль, попробуйте снова.');
         }
@@ -110,7 +147,10 @@ class SeaBattle {
     }
   }
 
-  void computerAttack(List<List<bool>> playerShips, List<List<String>> playerGrid) {
+  void computerAttack(
+    List<List<bool>> playerShips,
+    List<List<String>> playerGrid,
+  ) {
     var rng = Random();
     while (true) {
       int x = rng.nextInt(gridSize);
@@ -120,6 +160,7 @@ class SeaBattle {
         if (playerShips[x][y]) {
           playerGrid[x][y] = '×';
           playerShips[x][y] = false;
+          computerHits++;
           print('Компьютер попал в вашу клетку ($x, $y)!');
           if (isShipDestroyed(playerShips, x, y)) {
             print('Компьютер уничтожил ваш корабль!');
@@ -128,6 +169,7 @@ class SeaBattle {
           }
         } else {
           playerGrid[x][y] = '⯀';
+          computerMisses++;
           print('Компьютер промахнулся!');
         }
         break;
@@ -140,7 +182,11 @@ class SeaBattle {
       for (int j = -1; j <= 1; j++) {
         int nx = x + i;
         int ny = y + j;
-        if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && ships[nx][ny]) {
+        if (nx >= 0 &&
+            nx < gridSize &&
+            ny >= 0 &&
+            ny < gridSize &&
+            ships[nx][ny]) {
           return false;
         }
       }
@@ -149,10 +195,22 @@ class SeaBattle {
   }
 
   void playSinglePlayer() {
-    List<List<bool>> playerShips = List.generate(gridSize, (_) => List.filled(gridSize, false));
-    List<List<bool>> enemyShips = List.generate(gridSize, (_) => List.filled(gridSize, false));
-    List<List<String>> enemyGrid = List.generate(gridSize, (_) => List.filled(gridSize, '·'));
-    List<List<String>> playerGrid = List.generate(gridSize, (_) => List.filled(gridSize, '·'));
+    List<List<bool>> playerShips = List.generate(
+      gridSize,
+      (_) => List.filled(gridSize, false),
+    );
+    List<List<bool>> enemyShips = List.generate(
+      gridSize,
+      (_) => List.filled(gridSize, false),
+    );
+    List<List<String>> enemyGrid = List.generate(
+      gridSize,
+      (_) => List.filled(gridSize, '·'),
+    );
+    List<List<String>> playerGrid = List.generate(
+      gridSize,
+      (_) => List.filled(gridSize, '·'),
+    );
 
     print('Выберите способ расстановки кораблей: 1 - Вручную, 2 - Рандомно');
     String? choice = stdin.readLineSync();
@@ -172,7 +230,10 @@ class SeaBattle {
         String? input = stdin.readLineSync()?.toUpperCase();
         if (input == null || input.length < 2) throw FormatException();
         int y = columnLabels.indexOf(input[0]);
-        int x = int.tryParse(input.substring(1)) != null ? int.parse(input.substring(1)) - 1 : -1;
+        int x =
+            int.tryParse(input.substring(1)) != null
+                ? int.parse(input.substring(1)) - 1
+                : -1;
 
         if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) {
           print('Неверные координаты, попробуйте снова.');
@@ -183,6 +244,7 @@ class SeaBattle {
           enemyGrid[x][y] = '×';
           enemyShips[x][y] = false;
           enemyShipsRemaining--;
+          playerHits++;
           print('Попадание!');
           if (isShipDestroyed(enemyShips, x, y)) {
             print('Вы уничтожили корабль противника!');
@@ -191,6 +253,7 @@ class SeaBattle {
           }
         } else {
           enemyGrid[x][y] = '⯀';
+          playerMisses++;
           print('Промах!');
         }
       } catch (e) {
@@ -204,7 +267,15 @@ class SeaBattle {
         playerShipsRemaining = countRemainingShips(playerShips);
         displayGrid(playerGrid, showShips: true, ships: playerShips);
       }
+
+      print('\nТекущий счет:');
+      print('Игрок: $playerHits попаданий, $playerMisses промахов');
+      print('Компьютер: $computerHits попаданий, $computerMisses промахов');
     }
+
+    print('\nИтоговый счет:');
+    print('Игрок: $playerHits попаданий, $playerMisses промахов');
+    print('Компьютер: $computerHits попаданий, $computerMisses промахов');
 
     if (enemyShipsRemaining == 0) {
       print('Поздравляем, вы победили!');
@@ -226,7 +297,9 @@ class SeaBattle {
 
 void main() {
   SeaBattle game = SeaBattle();
-  print('Выберите режим игры: 1 - Против компьютера, 2 - Против другого игрока');
+  print(
+    'Выберите режим игры: 1 - Против компьютера, 2 - Против другого игрока',
+  );
   String? choice = stdin.readLineSync();
   if (choice == '1') {
     game.playSinglePlayer();
